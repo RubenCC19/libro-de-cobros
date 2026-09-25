@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libro de Cobros — Control de Facturación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A4A;
+    --ink-2:#25365c;
+    --paper:#FBF8F3;
+    --paper-line:#E3DBC8;
+    --card:#FFFFFF;
+    --slate:#5B6472;
+    --slate-light:#8B93A1;
+    --gold:#A9791E;
+    --gold-bg:#FBF0DC;
+    --gold-line:#E7CE99;
+    --teal:#1F6F6B;
+    --teal-bg:#DCEEEC;
+    --teal-line:#AFD7D3;
+    --green:#2E7D4F;
+    --green-bg:#DFF0E4;
+    --green-line:#B6DDC1;
+    --brick:#A83E2C;
+    --brick-bg:#F6E1DC;
+    --brick-line:#E7B9AB;
+    --grey-bg:#EDEDE9;
+    --grey-line:#D8D6CE;
+    --radius:10px;
+    --font-serif:'Source Serif 4', Georgia, serif;
+    --font-sans:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono:'IBM Plex Mono', 'Courier New', monospace;
+    --shadow-sm:0 1px 3px rgba(27,42,74,0.08);
+    --shadow-md:0 8px 24px rgba(27,42,74,0.12);
+    --shadow-lg:0 20px 50px rgba(0,0,0,0.28);
+    --radius-lg:12px;
+    --brand-bg:#1B2A4A;
+    --brand-bg-2:#25365c;
+    --header-bg:#F3EEE2;
+    --hover-bg:#FAF5E9;
+    --empty-bg:#F7F4EC;
+    --today-bg:#FDF6E3;
+    --btn-secondary-hover:#F2EDE1;
+  }
+  :root[data-theme="dark"]{
+    --ink:#EDEFF5;
+    --ink-2:#FFFFFF;
+    --paper:#12172A;
+    --paper-line:#2B3352;
+    --card:#1A2038;
+    --slate:#A9B1C6;
+    --slate-light:#7B8299;
+    --gold:#E3B04B;
+    --gold-bg:#3A2F14;
+    --gold-line:#5C4A1E;
+    --teal:#5FCFC9;
+    --teal-bg:#123634;
+    --teal-line:#1F5B57;
+    --green:#6FD196;
+    --green-bg:#123A24;
+    --green-line:#1E5C3A;
+    --brick:#F0917C;
+    --brick-bg:#3D1F17;
+    --brick-line:#63321F;
+    --grey-bg:#232B47;
+    --grey-line:#333C5C;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.35);
+    --shadow-md:0 8px 24px rgba(0,0,0,0.45);
+    --shadow-lg:0 20px 50px rgba(0,0,0,0.6);
+    --header-bg:#202849;
+    --hover-bg:#1F2745;
+    --empty-bg:#161C34;
+    --today-bg:#2A2416;
+    --btn-secondary-hover:#232B4A;
+  }
+  *{transition:background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-sans);
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:var(--font-serif); margin:0; color:var(--ink);}
+  button{font-family:var(--font-sans); cursor:pointer;}
+  table{border-collapse:collapse; width:100%;}
+  .num{font-family:var(--font-mono);}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    background:var(--brand-bg);
+    color:#fff;
+    padding:18px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-mark{
+    width:40px; height:40px; border-radius:8px;
+    background:linear-gradient(160deg,var(--gold),#8a6416);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-serif); font-weight:700; font-size:20px; color:#fff;
+    flex-shrink:0;
+  }
+  .brand h1{color:#fff; font-size:20px; letter-spacing:0.2px;}
+  .brand p{margin:2px 0 0; font-size:12.5px; color:#B9C2D6;}
+  .tabs{display:flex; gap:4px; background:rgba(255,255,255,0.08); padding:4px; border-radius:9px;}
+  .tab{
+    background:transparent; border:none; color:#CBD3E3;
+    padding:8px 14px; border-radius:6px; font-size:13.5px; font-weight:500;
+  }
+  .tab.active{background:#fff; color:var(--brand-bg); font-weight:600;}
+  .tab:hover:not(.active){color:#fff;}
+  .backup-btn{
+    background:transparent; border:1px solid rgba(255,255,255,0.3); color:#EDE4CF;
+    padding:7px 12px; border-radius:6px; font-size:12.5px;
+  }
+  .backup-btn:hover{border-color:#fff; color:#fff;}
+
+  main{max-width:1080px; margin:0 auto; padding:22px 24px 60px;}
+  section.tabpane{display:none;}
+  section.tabpane.active{display:block;}
+
+  /* ---------- calendar toolbar ---------- */
+  .cal-toolbar{
+    display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap;
+  }
+  .month-nav{display:flex; align-items:center; gap:10px;}
+  .month-nav button{
+    background:var(--card); border:1px solid var(--paper-line); width:34px; height:34px;
+    border-radius:8px; font-size:16px; color:var(--ink);
+  }
+  .month-nav button:hover{background:var(--paper-line);}
+  #monthLabel{font-size:24px; min-width:210px;}
+  .spacer{flex:1;}
+  .btn-primary{
+    background:var(--brand-bg); color:#fff; border:none; padding:10px 16px;
+    border-radius:8px; font-size:14px; font-weight:600;
+  }
+  .btn-primary:hover{background:var(--brand-bg-2);}
+  .btn-secondary{
+    background:var(--card); color:var(--ink); border:1px solid var(--paper-line);
+    padding:9px 14px; border-radius:8px; font-size:13.5px; font-weight:500;
+  }
+  .btn-secondary:hover{background:var(--btn-secondary-hover);}
+  .btn-text{background:none;border:none;color:var(--ink);text-decoration:underline;font-size:13px;padding:0;}
+  .btn-danger{background:var(--brick); color:#fff; border:none; padding:9px 14px; border-radius:8px; font-size:13.5px; font-weight:600;}
+  .btn-primary, .btn-secondary, .btn-danger{ box-shadow:var(--shadow-sm); }
+  .btn-primary:disabled{opacity:0.7; cursor:default;}
+  .spinner{
+    display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,0.4);
+    border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; margin-right:7px; vertical-align:-2px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- month stat strip ---------- */
+  .month-stats{display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap;}
+  .stat{
+    flex:1; min-width:150px; background:var(--card); border:1px solid var(--paper-line);
+    border-left:4px solid var(--ink); border-radius:var(--radius-lg); padding:12px 14px; box-shadow:var(--shadow-sm);
+  }
+  .stat.gold{border-left-color:var(--gold);}
+  .stat.teal{border-left-color:var(--teal);}
+  .stat.green{border-left-color:var(--green);}
+  .stat-label{display:block; font-size:11.5px; color:var(--slate); font-weight:600; text-transform:uppercase; letter-spacing:0.4px;}
+  .stat-value{font-family:var(--font-mono); font-size:21px; font-weight:600; color:var(--ink);}
+
+  /* ---------- calendar grid ---------- */
+  .cal-grid{
+    background:var(--card); border:1px solid var(--paper-line); border-radius:var(--radius-lg);
+    overflow:hidden; box-shadow:var(--shadow-sm);
+  }
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); background:var(--header-bg); border-bottom:1px solid var(--paper-line);}
+  .cal-weekdays div{padding:12px 6px; text-align:center; font-size:12.5px; font-weight:700; letter-spacing:0.5px; color:var(--slate);}
+  .cal-body{display:grid; grid-template-columns:repeat(7,minmax(0,1fr));}
+  .cal-day{
+    min-height:132px; min-width:0; border-right:1px solid var(--paper-line); border-bottom:1px solid var(--paper-line);
+    padding:10px; position:relative; cursor:pointer; display:flex; flex-direction:column; gap:8px; overflow:hidden;
+  }
+  .cal-day:hover{background:var(--hover-bg);}
+  .cal-day.empty{background:var(--empty-bg); cursor:default;}
+  .cal-day.empty .day-num{opacity:0.35;}
+  .cal-day.today{background:var(--today-bg);}
+  .day-num-row{display:flex; align-items:center; justify-content:space-between;}
+  .day-weekday-label{display:none;}
+  .day-num{
+    font-family:var(--font-mono); font-size:14px; font-weight:700; color:var(--slate);
+    width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%;
+  }
+  .cal-day.today .day-num{background:var(--gold); color:#fff;}
+  .day-status-dots{display:flex; gap:4px;}
+  .status-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .status-dot.gold{background:var(--gold);}
+  .status-dot.teal{background:var(--teal);}
+  .status-dot.green{background:var(--green);}
+  .day-chips{display:flex; flex-direction:column; gap:4px; flex:1; min-height:0; min-width:0; overflow:hidden;}
+  .chip{
+    font-size:11.5px; padding:4px 8px; border-radius:6px; font-weight:600; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; line-height:1.3;
+  }
+  .chip.gold{background:var(--gold-bg); color:var(--gold);}
+  .chip.teal{background:var(--teal-bg); color:var(--teal);}
+  .chip.green{background:var(--green-bg); color:var(--green);}
+  .chip.grey{background:var(--grey-bg); color:var(--slate); font-weight:500;}
+  .day-total{
+    font-family:var(--font-mono); font-size:13px; color:var(--ink); font-weight:700; align-self:flex-end;
+    background:var(--grey-bg); padding:3px 8px; border-radius:6px; margin-top:auto;
+  }
+
+  /* ---------- modal ---------- */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(20,26,40,0.5);
+    align-items:flex-start; justify-content:center; padding:40px 16px; z-index:50; overflow-y:auto;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--card); border-radius:var(--radius-lg); width:100%; max-width:560px;
+    box-shadow:var(--shadow-lg);
+  }
+  .modal header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--paper-line);
+  }
+  .modal header h3{font-size:16.5px;}
+  .modal-close{background:none; border:none; font-size:22px; color:var(--slate); line-height:1;}
+  .modal-body{padding:14px 20px 18px;}
+
+  .entry-list{list-style:none; margin:0 0 12px; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .entry-item{
+    border:1px solid var(--paper-line); border-radius:8px; padding:8px 10px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .entry-item .entry-main{display:flex; flex-direction:column; gap:2px;}
+  .entry-item .entry-title{font-size:13.5px; font-weight:600;}
+  .entry-item .entry-sub{font-size:12px; color:var(--slate);}
+  .entry-item .entry-amt{font-family:var(--font-mono); font-weight:600; font-size:14px;}
+  .entry-actions{display:flex; gap:6px;}
+  .icon-btn{background:none; border:none; font-size:14px; color:var(--slate); padding:4px;}
+  .icon-btn:hover{color:var(--ink);}
+  .badge{display:inline-block; font-size:10.5px; padding:2px 7px; border-radius:20px; font-weight:600;}
+  .badge.gold{background:var(--gold-bg); color:var(--gold);}
+  .badge.teal{background:var(--teal-bg); color:var(--teal);}
+  .badge.green{background:var(--green-bg); color:var(--green);}
+  .badge.grey{background:var(--grey-bg); color:var(--slate);}
+  .badge.brick{background:var(--brick-bg); color:var(--brick);}
+
+  form .field{margin-bottom:9px;}
+  form label{display:block; font-size:11.5px; font-weight:600; color:var(--slate); margin-bottom:3px;}
+  form input, form select, form textarea{
+    width:100%; padding:7px 9px; border:1px solid var(--paper-line); border-radius:7px;
+    font-family:var(--font-sans); font-size:13.5px; background:var(--card); color:var(--ink);
+    color-scheme:light dark;
+  }
+  form textarea{resize:vertical; min-height:44px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .check-field{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .check-field input{width:auto;}
+  .check-field label{margin:0; font-size:13px; font-weight:500; color:var(--ink);}
+  .quick-add{margin-top:2px; margin-bottom:6px;}
+  .quick-add-form{display:none; gap:8px; margin-top:6px; align-items:flex-end;}
+  .quick-add-form.show{display:flex;}
+  .quick-add-form .field{margin:0; flex:1;}
+  .form-actions{display:flex; gap:10px; margin-top:12px;}
+  .conditional{display:none;}
+  .conditional.show{display:block;}
+  .hint{font-size:12px; color:var(--slate-light); margin-top:2px;}
+
+  /* ---------- section toolbar / tables ---------- */
+  .section-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .card-table{background:var(--card); border:1px solid var(--paper-line); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-sm);}
+  .card-table table{font-size:13.5px;}
+  .card-table th{
+    background:#F3EEE2; text-align:left; padding:10px 14px; font-size:11.5px; text-transform:uppercase;
+    letter-spacing:0.3px; color:var(--slate); font-weight:600; border-bottom:1px solid var(--paper-line);
+  }
+  .card-table td{padding:11px 14px; border-bottom:1px solid var(--paper-line); vertical-align:middle;}
+  .card-table tr:last-child td{border-bottom:none;}
+  .empty-state{padding:40px 20px; text-align:center; color:var(--slate);}
+  .empty-state h3{margin-bottom:6px;}
+
+  /* ---------- resumen ---------- */
+  .stats-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:26px;}
+  .stat-card{
+    flex:1; min-width:160px; background:var(--card); border:1px solid var(--paper-line);
+    border-radius:var(--radius-lg); padding:16px 18px; border-top:4px solid var(--ink); box-shadow:var(--shadow-sm);
+  }
+  .stat-card.gold{border-top-color:var(--gold);}
+  .stat-card.teal{border-top-color:var(--teal);}
+  .stat-card.green{border-top-color:var(--green);}
+  .stat-card.brick{border-top-color:var(--brick);}
+  .stat-card .stat-label{margin-bottom:6px;}
+  .stat-card .stat-value{font-size:26px;}
+  h2.section-title{font-size:19px; margin:26px 0 12px;}
+  h2.section-title:first-child{margin-top:0;}
+
+  footer.disclaimer{
+    max-width:1080px; margin:10px auto 40px; padding:0 24px; font-size:12px; color:var(--slate-light);
+  }
+
+  .loading-msg{padding:30px; text-align:center; color:var(--slate);}
+  @keyframes toastIn{ from{ opacity:0; transform:translateY(-8px);} to{ opacity:1; transform:translateY(0);} }
+  .toast{
+    position:fixed; top:84px; right:18px; z-index:200;
+    background:var(--brick); color:#fff; padding:12px 16px; border-radius:var(--radius-lg); font-size:13.5px;
+    font-weight:600; box-shadow:var(--shadow-md); display:none; max-width:min(360px, 88vw);
+    animation:toastIn 0.25s ease; align-items:center; gap:8px;
+  }
+  .toast.show{display:flex;}
+  .toast.info{background:var(--brand-bg);}
+  .toggle-row{display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:13px; color:var(--slate);}
+  .toggle-row input{width:auto;}
+  .theme-toggle{
+    background:transparent; border:1px solid rgba(255,255,255,0.3); color:#EDE4CF;
+    width:34px; height:34px; border-radius:8px; font-size:15px; display:flex; align-items:center; justify-content:center;
+  }
+  .theme-toggle:hover{border-color:#fff; color:#fff;}
+  .wa-btn{
+    display:inline-flex; align-items:center; gap:5px; background:#25D366; color:#fff; border:none;
+    padding:5px 10px; border-radius:20px; font-size:11.5px; font-weight:700; box-shadow:var(--shadow-sm);
+  }
+  .wa-btn:hover{background:#1EBE5A;}
+  .tax-breakdown{
+    background:var(--grey-bg); border:1px dashed var(--paper-line); border-radius:8px; padding:8px 10px;
+    font-size:12px; color:var(--slate); margin:6px 0 9px; display:flex; flex-direction:column; gap:2px;
+  }
+  .tax-breakdown .tb-row{display:flex; justify-content:space-between; align-items:center;}
+  .tax-breakdown .neto-row{
+    font-size:13.5px; font-weight:700; color:var(--ink); border-top:1px solid var(--paper-line);
+    padding-top:4px; margin-top:2px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .tax-breakdown span.val{font-family:var(--font-mono);}
+
+  @media (max-width:720px){
+    .topbar{padding:14px 16px;}
+    main{padding:16px 14px 60px;}
+    .cal-weekdays{display:none;}
+    .cal-body{grid-template-columns:1fr;}
+    .cal-day{
+      min-height:auto; border-right:none; flex-direction:row; align-items:flex-start; gap:12px; padding:14px 12px;
+    }
+    .day-num-row{flex-direction:column; gap:4px; align-items:center; width:44px; flex-shrink:0;}
+    .cal-day .day-num{width:32px; height:32px; font-size:14px;}
+    .day-weekday-label{
+      display:block; font-size:10px; font-weight:700; color:var(--slate-light);
+      text-transform:uppercase; letter-spacing:0.4px;
+    }
+    .cal-day.today .day-weekday-label{color:var(--gold);}
+    .day-chips{flex:1; min-width:0; padding-top:2px;}
+    .day-total{margin-left:0; align-self:flex-start; flex-shrink:0; margin-top:2px;}
+    .cal-day.empty{display:none;}
+    #monthLabel{font-size:20px; min-width:0;}
+    .row2{grid-template-columns:1fr;}
+    .card-table{overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">$</div>
+    <div>
+      <h1>Libro de Cobros</h1>
+      <p>Dependencia + independiente, en un solo control</p>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="calendario">Calendario</button>
+    <button class="tab" data-tab="resumen">Resumen</button>
+    <button class="tab" data-tab="clientes">Clientes</button>
+    <button class="tab" data-tab="pendientes">Pendientes</button>
+  </nav>
+  <button class="theme-toggle" id="themeToggle" title="Cambiar tema">🌙</button>
+  <button class="backup-btn" id="settingsBtn">⚙ Conexión</button>
+  <button class="backup-btn" id="backupBtn">Respaldo de datos</button>
+</header>
+
+<div class="overlay show" id="onboardingScreen" style="align-items:center;">
+  <div class="modal" style="max-width:600px;">
+    <header>
+      <h3>Conecta tu almacenamiento gratuito</h3>
+    </header>
+    <div class="modal-body">
+      <p class="hint" style="font-size:13.5px; margin-bottom:14px;">
+        Esta app guarda tus datos en una Hoja de Google que es tuya — gratis, y puedes abrir este mismo archivo
+        desde cualquier computador o celular y vas a ver siempre la misma información. Se configura una sola vez.
+      </p>
+      <ol style="font-size:13.5px; color:var(--ink); padding-left:20px; line-height:1.7;">
+        <li>Entra a <strong>sheets.google.com</strong> y crea una hoja nueva (cualquier nombre).</li>
+        <li>Ve al menú <strong>Extensiones → Apps Script</strong>.</li>
+        <li>Borra el código de ejemplo y pega el código que te dio Claude en el chat.</li>
+        <li>Guarda el proyecto (Ctrl+S / ícono de disquete).</li>
+        <li>Clic en <strong>Implementar → Nueva implementación</strong>.</li>
+        <li>Tipo: <strong>Aplicación web</strong>. Ejecutar como: <strong>Yo</strong>. Acceso: <strong>Cualquier usuario</strong>.</li>
+        <li>Clic en <strong>Implementar</strong>, autoriza los permisos, y copia la URL que termina en <code>/exec</code>.</li>
+        <li>Pega esa URL abajo y guarda.</li>
+      </ol>
+      <div class="field" style="margin-top:16px;">
+        <label>URL de tu Apps Script</label>
+        <input type="text" id="onboardingUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="onboardingSaveBtn">Guardar y continuar</button>
+      </div>
+      <p class="hint" id="onboardingMsg" style="margin-top:10px;"></p>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="toast" id="errorToast"><span id="errorToastMsg"></span></div>
+
+
+  <!-- ===================== CALENDARIO ===================== -->
+  <section class="tabpane active" id="tab-calendario">
+    <div class="cal-toolbar">
+      <div class="month-nav">
+        <button id="prevMonth">‹</button>
+        <h2 id="monthLabel">Cargando…</h2>
+        <script>
+          // Fijamos el mes/año actual de inmediato, en cuanto el navegador lee esta línea —
+          // antes de cargar nada por red — para que nunca se vea un mes viejo ("parpadeo").
+          (function(){
+            var MESES_INLINE = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            var d = new Date();
+            document.getElementById('monthLabel').textContent = MESES_INLINE[d.getMonth()] + ' ' + d.getFullYear();
+          })();
+        </script>
+        <button id="nextMonth">›</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn-secondary" id="todayBtn">Hoy</button>
+      <button class="btn-primary" id="addTodayEntryBtn">+ Nuevo registro</button>
+    </div>
+
+    <div class="month-stats">
+      <div class="stat gold">
+        <span class="stat-label">Por facturar este mes</span>
+        <span class="stat-value" id="statPendFact">$0.00</span>
+      </div>
+      <div class="stat teal">
+        <span class="stat-label">Facturado, por cobrar</span>
+        <span class="stat-value" id="statPendCobro">$0.00</span>
+      </div>
+      <div class="stat green">
+        <span class="stat-label">Cobrado este mes</span>
+        <span class="stat-value" id="statCobrado">$0.00</span>
+      </div>
+    </div>
+
+    <div class="cal-grid">
+      <div class="cal-weekdays">
+        <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+      </div>
+      <div class="cal-body" id="calBody"></div>
+    </div>
+  </section>
+
+  <!-- ===================== RESUMEN ===================== -->
+  <section class="tabpane" id="tab-resumen">
+    <div id="resumenContent" class="loading-msg">Cargando resumen…</div>
+  </section>
+
+  <!-- ===================== CLIENTES ===================== -->
+  <section class="tabpane" id="tab-clientes">
+    <div class="section-toolbar">
+      <h2>Clientes y empleadores</h2>
+      <button class="btn-primary" id="addClientBtn">+ Nuevo cliente</button>
+    </div>
+    <div class="card-table" id="clientsTableWrap"></div>
+  </section>
+
+  <!-- ===================== PENDIENTES ===================== -->
+  <section class="tabpane" id="tab-pendientes">
+    <div class="section-toolbar">
+      <h2>Pendientes de cobro</h2>
+      <button class="btn-primary" id="addPendingBtn">+ Nuevo pendiente</button>
+    </div>
+    <p class="hint" style="margin-bottom:14px;">Usa esta pestaña para proyectos o facturas grandes que prefieres controlar aparte del registro diario.</p>
+    <label class="toggle-row"><input type="checkbox" id="showCobradosToggle"> Mostrar también los ya cobrados (historial)</label>
+    <div class="card-table" id="pendingTableWrap"></div>
+  </section>
+
+</main>
+
+<footer class="disclaimer">Los datos se guardan en tu propia Hoja de Google (gratis). Abre este mismo archivo desde cualquier dispositivo, conéctalo una vez con "⚙ Conexión" y vas a ver siempre la misma información. Usa "Respaldo de datos" de vez en cuando para exportar una copia.</footer>
+
+<!-- ===================== MODAL: DÍA ===================== -->
+<div class="overlay" id="dayModal">
+  <div class="modal">
+    <header>
+      <h3 id="dayModalTitle">Día</h3>
+      <button class="modal-close" data-close="dayModal">&times;</button>
+    </header>
+    <div class="modal-body">
+      <ul class="entry-list" id="dayEntryList"></ul>
+      <button class="btn-secondary" id="showEntryFormBtn">+ Agregar registro este día</button>
+
+      <form id="entryForm" style="display:none; margin-top:16px;">
+        <input type="hidden" id="entryId">
+        <input type="hidden" id="entryDate">
+
+        <div class="row2">
+          <div class="field">
+            <label>Tipo de trabajo</label>
+            <select id="entryType" required>
+              <option value="Dependencia">Dependencia</option>
+              <option value="Independiente">Independiente</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Cliente / empleador</label>
+            <select id="entryClient" required></select>
+          </div>
+        </div>
+
+        <div class="quick-add">
+          <button type="button" class="btn-text" id="toggleQuickAddClient">+ Agregar un cliente nuevo rápido</button>
+          <div class="quick-add-form" id="quickAddClientForm">
+            <div class="field">
+              <label>Nombre</label>
+              <input type="text" id="quickClientName" placeholder="Nombre del cliente o empleador">
+            </div>
+            <div class="field">
+              <label>Valor habitual por trabajo (opcional)</label>
+              <input type="number" id="quickClientRate" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <button type="button" class="btn-secondary" id="quickAddClientSave">Guardar</button>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:12px;">
+          <label>Actividad realizada</label>
+          <input type="text" id="entryActivity" placeholder="Ej: Instalación, obra, mantenimiento..." required>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>Horas trabajadas (opcional)</label>
+            <input type="number" id="entryHours" min="0" step="0.5" placeholder="8">
+          </div>
+          <div class="field">
+            <label>Notas (opcional)</label>
+            <input type="text" id="entryNotes" placeholder="Notas">
+          </div>
+        </div>
+
+        <div class="check-field">
+          <input type="checkbox" id="entryGenerates">
+          <label for="entryGenerates">Este día genera un cobro / factura</label>
+        </div>
+
+        <div class="conditional" id="chargeFields">
+          <div class="row2">
+            <div class="field">
+              <label>Monto base ($)</label>
+              <input type="number" id="entryMontoBase" min="0" step="0.01" placeholder="0.00">
+              <p class="hint" id="entryAmountHint" style="display:none;"></p>
+            </div>
+            <div class="field">
+              <label>Estado</label>
+              <select id="entryStatus">
+                <option value="pendiente_facturar">Pendiente de facturar</option>
+                <option value="facturado_pendiente_cobro">Facturado — pendiente de cobro</option>
+                <option value="cobrado">Cobrado</option>
+              </select>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>IVA (%)</label>
+              <input type="number" id="entryIva" min="0" step="0.01" value="15">
+            </div>
+            <div class="field">
+              <label>Retención (%)</label>
+              <input type="number" id="entryRetencion" min="0" step="0.01" value="0">
+            </div>
+          </div>
+          <div class="tax-breakdown">
+            <div class="tb-row"><span>Subtotal</span><span class="val" id="entrySubtotalOut">$0.00</span></div>
+            <div class="tb-row"><span>+ IVA</span><span class="val" id="entryIvaOut">$0.00</span></div>
+            <div class="tb-row"><span>− Retención</span><span class="val" id="entryRetOut">$0.00</span></div>
+            <div class="neto-row"><span>Total neto a cobrar</span><span class="val" id="entryNetoOut">$0.00</span></div>
+          </div>
+          <input type="hidden" id="entryAmount">
+          <div class="row2">
+            <div class="field">
+              <label>Fecha de factura (opcional)</label>
+              <input type="date" id="entryInvoiceDate">
+            </div>
+            <div class="field">
+              <label>Fecha de cobro (opcional)</label>
+              <input type="date" id="entryCollectionDate">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Guardar registro</button>
+          <button type="button" class="btn-secondary" id="cancelEntryBtn">Cancelar</button>
+          <button type="button" class="btn-danger" id="deleteEntryBtn" style="display:none; margin-left:auto;">Eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CLIENTE ===================== -->
+<div class="overlay" id="clientModal">
+  <div class="modal">
+    <header>
+      <h3 id="clientModalTitle">Nuevo cliente</h3>
+      <button class="modal-close" data-close="clientModal">&times;</button>
+    </header>
+    <div class="modal-body">
+      <form id="clientForm">
+        <input type="hidden" id="clientId">
+        <div class="field">
+          <label>Nombre del cliente / empleador</label>
+          <input type="text" id="clientName" required>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Tipo</label>
+            <select id="clientType">
+              <option value="Dependencia">Dependencia</option>
+              <option value="Independiente">Independiente</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>RUC / Cédula (opcional)</label>
+            <input type="text" id="clientTaxId">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Contacto (opcional)</label>
+            <input type="text" id="clientContact" placeholder="Teléfono o email">
+          </div>
+          <div class="field">
+            <label>Valor habitual por trabajo / sueldo (opcional)</label>
+            <input type="number" id="clientRate" min="0" step="0.01" placeholder="Ej: 150.00">
+            <p class="hint">Se va a sugerir automáticamente cuando registres un trabajo con este cliente. Podrás cambiarlo si esa obra vale distinto.</p>
+          </div>
+        </div>
+        <div class="field">
+          <label>Notas (opcional)</label>
+          <textarea id="clientNotes"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Guardar cliente</button>
+          <button type="button" class="btn-secondary" id="cancelClientBtn">Cancelar</button>
+          <button type="button" class="btn-danger" id="deleteClientBtn" style="display:none; margin-left:auto;">Eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: PENDIENTE ===================== -->
+<div class="overlay" id="pendingModal">
+  <div class="modal">
+    <header>
+      <h3 id="pendingModalTitle">Nuevo pendiente de cobro</h3>
+      <button class="modal-close" data-close="pendingModal">&times;</button>
+    </header>
+    <div class="modal-body">
+      <form id="pendingForm">
+        <input type="hidden" id="pendingId">
+        <div class="field">
+          <label>Cliente / empleador</label>
+          <select id="pendingClient" required></select>
+        </div>
+        <div class="field">
+          <label>Concepto</label>
+          <input type="text" id="pendingConcept" placeholder="Ej: Proyecto página web - anticipo" required>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Fecha del servicio</label>
+            <input type="date" id="pendingServiceDate">
+          </div>
+          <div class="field">
+            <label>Monto base ($)</label>
+            <input type="number" id="pendingMontoBase" min="0" step="0.01" required>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>IVA (%)</label>
+            <input type="number" id="pendingIva" min="0" step="0.01" value="15">
+          </div>
+          <div class="field">
+            <label>Retención (%)</label>
+            <input type="number" id="pendingRetencion" min="0" step="0.01" value="0">
+          </div>
+        </div>
+        <div class="tax-breakdown">
+          <div class="tb-row"><span>Subtotal</span><span class="val" id="pendingSubtotalOut">$0.00</span></div>
+          <div class="tb-row"><span>+ IVA</span><span class="val" id="pendingIvaOut">$0.00</span></div>
+          <div class="tb-row"><span>− Retención</span><span class="val" id="pendingRetOut">$0.00</span></div>
+          <div class="neto-row"><span>Total neto a cobrar</span><span class="val" id="pendingNetoOut">$0.00</span></div>
+        </div>
+        <input type="hidden" id="pendingAmount">
+        <div class="field">
+          <label>Estado</label>
+          <select id="pendingStatus">
+            <option value="pendiente_facturar">Pendiente de facturar</option>
+            <option value="facturado_pendiente_cobro">Facturado — pendiente de cobro</option>
+            <option value="cobrado">Cobrado</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Fecha de factura (opcional)</label>
+            <input type="date" id="pendingInvoiceDate">
+          </div>
+          <div class="field">
+            <label>Fecha límite de cobro (opcional)</label>
+            <input type="date" id="pendingDueDate">
+          </div>
+        </div>
+        <div class="field">
+          <label>Fecha de cobro real (opcional)</label>
+          <input type="date" id="pendingCollectionDate">
+        </div>
+        <div class="field">
+          <label>Notas (opcional)</label>
+          <textarea id="pendingNotes"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Guardar</button>
+          <button type="button" class="btn-secondary" id="cancelPendingBtn">Cancelar</button>
+          <button type="button" class="btn-danger" id="deletePendingBtn" style="display:none; margin-left:auto;">Eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CONEXIÓN ===================== -->
+<div class="overlay" id="settingsModal">
+  <div class="modal">
+    <header>
+      <h3>Conexión a tu Hoja de Google</h3>
+      <button class="modal-close" data-close="settingsModal">&times;</button>
+    </header>
+    <div class="modal-body">
+      <div class="field">
+        <label>URL de tu Apps Script (termina en /exec)</label>
+        <input type="text" id="settingsUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec">
+      </div>
+      <div class="field">
+        <label>Tu nombre (para firmar los mensajes de WhatsApp a clientes)</label>
+        <input type="text" id="settingsUserName" placeholder="Ej: Carlos Pérez">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="settingsSaveBtn">Guardar</button>
+        <button type="button" class="btn-secondary" id="cancelSettingsBtn">Cancelar</button>
+      </div>
+      <p class="hint" id="settingsMsg" style="margin-top:10px;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: RESPALDO ===================== -->
+<div class="overlay" id="backupModal">
+  <div class="modal">
+    <header>
+      <h3>Respaldo de datos</h3>
+      <button class="modal-close" data-close="backupModal">&times;</button>
+    </header>
+    <div class="modal-body">
+      <p class="hint" style="margin-bottom:14px;">Exporta una copia de tus clientes, registros y pendientes en un archivo. Guárdalo en un lugar seguro por si acaso.</p>
+      <button class="btn-primary" id="exportBtn">Descargar respaldo (.json)</button>
+      <hr style="margin:20px 0; border:none; border-top:1px solid var(--paper-line);">
+      <label style="display:block; font-size:12.5px; font-weight:600; color:var(--slate); margin-bottom:6px;">Restaurar desde un respaldo</label>
+      <input type="file" id="importFile" accept="application/json" style="margin-bottom:10px;">
+      <div>
+        <button class="btn-secondary" id="importBtn">Restaurar archivo</button>
+      </div>
+      <div id="backupMsg" class="hint" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const DIAS_CORTOS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+  const STATUS_LABEL = {
+    no_aplica: "No aplica",
+    pendiente_facturar: "Pendiente de facturar",
+    facturado_pendiente_cobro: "Facturado — pendiente de cobro",
+    cobrado: "Cobrado"
+  };
+  const STATUS_COLOR = {
+    no_aplica: "grey",
+    pendiente_facturar: "gold",
+    facturado_pendiente_cobro: "teal",
+    cobrado: "green"
+  };
+
+  function uid(){
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+  }
+  function fmtMoney(n){
+    n = Number(n) || 0;
+    return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function ymKey(year, month){ return year + '-' + pad(month+1); } // month 0-indexed
+  function dateStr(year, month, day){ return year + '-' + pad(month+1) + '-' + pad(day); }
+  function todayISO(){
+    const d = new Date();
+    return dateStr(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  // Construye el link de WhatsApp Web con el mensaje de recordatorio de cobro precargado.
+  // Devuelve null si el cliente no tiene un contacto que parezca un teléfono (evita botones rotos).
+  function waLink(client, concepto, monto){
+    if (!client || !client.contact) return null;
+    const digits = String(client.contact).replace(/[^0-9]/g, '');
+    if (digits.length < 7) return null;
+    const nombre = getUserName() || 'tu proveedor de servicios';
+    const msg = 'Estimado ' + (client.name || 'cliente') + ', le saluda ' + nombre + '. '
+      + 'Le recordamos amablemente que la factura del servicio "' + (concepto || 'servicio prestado') + '" '
+      + 'por un valor de $' + (Number(monto) || 0).toFixed(2) + ' se encuentra pendiente. Agradecemos su gestión.';
+    return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(msg);
+  }
+
+  // ---------------- API helpers (Google Apps Script backend v2) ----------------
+  const LS_URL_KEY = 'libroCobros_scriptUrl';
+  const LS_NAME_KEY = 'libroCobros_userName';
+  const LS_THEME_KEY = 'libroCobros_theme';
+
+  function getScriptUrl(){
+    return localStorage.getItem(LS_URL_KEY) || '';
+  }
+  function setScriptUrl(url){
+    localStorage.setItem(LS_URL_KEY, url.trim());
+  }
+  function getUserName(){
+    return localStorage.getItem(LS_NAME_KEY) || '';
+  }
+  function setUserName(name){
+    localStorage.setItem(LS_NAME_KEY, name.trim());
+  }
+
+  // ---------------- modo oscuro (preferencia guardada por dispositivo) ----------------
+  function applyTheme(theme){
+    if (theme === 'dark'){
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('themeToggle').textContent = '☀️';
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('themeToggle').textContent = '🌙';
+    }
+  }
+  function initTheme(){
+    const saved = localStorage.getItem(LS_THEME_KEY);
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+  }
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(LS_THEME_KEY, next);
+    applyTheme(next);
+  });
+  initTheme();
+
+  function showError(msg, autoHideMs){
+    const toast = document.getElementById('errorToast');
+    document.getElementById('errorToastMsg').textContent = msg;
+    toast.classList.add('show');
+    if (toast._hideTimer) clearTimeout(toast._hideTimer);
+    // Todo aviso se cierra solo, como máximo a los 8s. Sin botón de cerrar: se quita solo.
+    toast._hideTimer = setTimeout(() => toast.classList.remove('show'), autoHideMs || 8000);
+  }
+
+  // Reintenta automáticamente una vez si el error parece de red (no de datos), mostrando
+  // "Error de conexión. Reintentando..." en vez de una alerta intrusiva.
+  async function fetchWithRetry_(doFetch){
+    try{
+      return await doFetch();
+    }catch(e){
+      showError('Error de conexión. Reintentando…');
+      await new Promise(r => setTimeout(r, 1200));
+      try{
+        const res = await doFetch();
+        document.getElementById('errorToast').classList.remove('show');
+        return res;
+      }catch(e2){
+        throw e2;
+      }
+    }
+  }
+
+  async function apiGet(action, params){
+    const url = getScriptUrl();
+    if (!url) throw new Error('Sin conexión configurada.');
+    let qs = '?action=' + encodeURIComponent(action);
+    if (params){
+      Object.keys(params).forEach(k => { qs += '&' + k + '=' + encodeURIComponent(params[k]); });
+    }
+    let data;
+    try{
+      data = await fetchWithRetry_(async () => {
+        const res = await fetch(url + qs);
+        return await res.json();
+      });
+    }catch(e){
+      showError('No se pudo conectar con tu Hoja de Google. Revisa tu internet e intenta de nuevo.', 6000);
+      throw e;
+    }
+    if (!data || data.ok === false){
+      showError('Error de guardado: ' + (data && data.error ? data.error : 'respuesta inválida del servidor.'), 6000);
+      throw new Error((data && data.error) || 'error desconocido');
+    }
+    return data;
+  }
+
+  async function apiPost(action, payload){
+    const url = getScriptUrl();
+    if (!url) throw new Error('Sin conexión configurada.');
+    payload = Object.assign({ action: action }, payload);
+    let data;
+    try{
+      data = await fetchWithRetry_(async () => {
+        const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+        return await res.json();
+      });
+    }catch(e){
+      showError('No se pudo guardar: sin conexión con tu Hoja de Google. Vuelve a intentar.', 6000);
+      throw e;
+    }
+    if (!data || data.ok === false){
+      showError('Error de guardado: ' + (data && data.error ? data.error : 'respuesta inválida del servidor.'), 6000);
+      throw new Error((data && data.error) || 'error desconocido');
+    }
+    return data;
+  }
+
+  // ---------------- app state ----------------
+  const now = new Date();
+  const state = {
+    year: now.getFullYear(),
+    month: now.getMonth(), // SIEMPRE el mes/año actual del sistema al abrir la app
+    clients: [],
+    entriesCache: {}, // ymKey -> {entries, totals}
+    pending: [],
+    activeDate: null,
+    lastSummary: null
+  };
+
+  // ---------------- clients ----------------
+  async function loadClients(){
+    // se llena normalmente desde bootstrap(); este helper queda como respaldo
+    const data = await apiGet('clients');
+    state.clients = data.clients || [];
+  }
+  async function saveClientApi(client){
+    const res = await apiPost('saveClient', { client: client });
+    return res.id;
+  }
+  async function deleteClientApi(id){
+    await apiPost('deleteClient', { id: id });
+  }
+  function clientName(id){
+    const c = state.clients.find(c => c.id === id);
+    return c ? c.name : '(cliente eliminado)';
+  }
+
+  // ---------------- entries ----------------
+  async function loadEntriesForMonth(ym, force){
+    if (!force && state.entriesCache[ym]) return state.entriesCache[ym].entries;
+    const data = await apiGet('entriesMonth', { ym: ym });
+    state.entriesCache[ym] = { entries: data.entries || [], totals: data.totals || {}, byDate: data.byDate || {} };
+    return state.entriesCache[ym].entries;
+  }
+  async function saveEntryApi(entry){
+    const res = await apiPost('saveEntry', { entry: entry });
+    entry.id = res.id;
+    return res.id;
+  }
+  async function deleteEntryApi(id){
+    await apiPost('deleteEntry', { id: id });
+  }
+
+  // ---------------- pending ----------------
+  async function loadPending(){
+    const data = await apiGet('pending');
+    state.pending = data.pending || [];
+  }
+  async function savePendingApi(item){
+    const res = await apiPost('savePending', { pending: item });
+    item.id = res.id;
+    return res.id;
+  }
+  async function deletePendingApi(id){
+    await apiPost('deletePending', { id: id });
+  }
+
+  // ---------------- tabs ----------------
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tabpane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'resumen') renderResumen();
+      if (btn.dataset.tab === 'clientes') renderClients();
+      if (btn.dataset.tab === 'pendientes') renderPending();
+    });
+  });
+
+  // ---------------- overlay helpers ----------------
+  function openModal(id){ document.getElementById(id).classList.add('show'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.overlay').forEach(ov => {
+    // Cierra SOLO si tanto el inicio del toque (mousedown/touchstart) como el clic final
+    // caen fuera de la ventana, sobre el fondo oscuro. Esto evita que el reacomodo de
+    // pantalla al abrirse el teclado numérico en el celular cierre el formulario por error
+    // mientras escribes en un campo.
+    let pressStartedOnOverlay = false;
+    ov.addEventListener('pointerdown', (e) => { pressStartedOnOverlay = (e.target === ov); });
+    ov.addEventListener('click', (e) => {
+      if (pressStartedOnOverlay && e.target === ov) ov.classList.remove('show');
+      pressStartedOnOverlay = false;
+    });
+  });
+
+  // ================= CALENDAR =================
+  function fillClientSelect(selectEl, selectedId){
+    selectEl.innerHTML = '';
+    if (state.clients.length === 0){
+      const opt = document.createElement('option');
+      opt.value=''; opt.textContent = 'Agrega un cliente primero →';
+      selectEl.appendChild(opt);
+      return;
+    }
+    state.clients.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      if (c.id === selectedId) opt.selected = true;
+      selectEl.appendChild(opt);
+    });
+  }
+
+  async function renderCalendar(){
+    document.getElementById('monthLabel').textContent = MESES[state.month] + ' ' + state.year;
+    const ym = ymKey(state.year, state.month);
+    const body = document.getElementById('calBody');
+    body.innerHTML = '<div class="loading-msg" style="grid-column:1/-1;">Cargando…</div>';
+
+    let entries, totals;
+    try{
+      entries = await loadEntriesForMonth(ym);
+      totals = state.entriesCache[ym].totals;
+    }catch(e){
+      body.innerHTML = '<div class="loading-msg" style="grid-column:1/-1; color:var(--brick);">No se pudo cargar el calendario. '
+        + '<button class="btn-text" id="retryCalBtn">Reintentar</button></div>';
+      const retryBtn = document.getElementById('retryCalBtn');
+      if (retryBtn) retryBtn.addEventListener('click', renderCalendar);
+      return;
+    }
+
+    const firstOfMonth = new Date(state.year, state.month, 1);
+    let startWeekday = firstOfMonth.getDay(); // 0=Sun
+    startWeekday = (startWeekday === 0) ? 6 : startWeekday - 1; // convert to Mon=0
+    const daysInMonth = new Date(state.year, state.month+1, 0).getDate();
+
+    body.innerHTML = '';
+
+    for (let i=0; i<startWeekday; i++){
+      const cell = document.createElement('div');
+      cell.className = 'cal-day empty';
+      body.appendChild(cell);
+    }
+
+    const today = todayISO();
+
+    for (let day=1; day<=daysInMonth; day++){
+      const ds = dateStr(state.year, state.month, day);
+      const dayEntries = entries.filter(e => e.date === ds);
+      const cell = document.createElement('div');
+      cell.className = 'cal-day' + (ds === today ? ' today' : '');
+      cell.dataset.date = ds;
+
+      // Fila superior: número del día (a la izquierda) + puntos de color por estado presente ese día
+      // (para ver de un vistazo qué hay sin tener que leer texto).
+      const numRow = document.createElement('div');
+      numRow.className = 'day-num-row';
+      const num = document.createElement('span');
+      num.className = 'day-num';
+      num.textContent = day;
+      numRow.appendChild(num);
+
+      // Etiqueta del día de la semana (Lun, Mar...) — solo se ve en la vista de celular,
+      // donde no cabe el encabezado de columnas. Se calcula por posición, no con new Date(),
+      // para que nunca se desalinee sin importar el mes.
+      const weekdayIdx = (startWeekday + (day - 1)) % 7;
+      const wdLabel = document.createElement('span');
+      wdLabel.className = 'day-weekday-label';
+      wdLabel.textContent = DIAS_CORTOS[weekdayIdx];
+      numRow.appendChild(wdLabel);
+
+      const statusesPresent = new Set(dayEntries.filter(e => e.status !== 'no_aplica').map(e => e.status));
+      if (statusesPresent.size > 0){
+        const dots = document.createElement('div');
+        dots.className = 'day-status-dots';
+        ['pendiente_facturar','facturado_pendiente_cobro','cobrado'].forEach(st => {
+          if (statusesPresent.has(st)){
+            const dot = document.createElement('span');
+            dot.className = 'status-dot ' + STATUS_COLOR[st];
+            dots.appendChild(dot);
+          }
+        });
+        numRow.appendChild(dots);
+      }
+      cell.appendChild(numRow);
+
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'day-chips';
+      dayEntries.slice(0,2).forEach(en => {
+        const chip = document.createElement('div');
+        chip.className = 'chip ' + STATUS_COLOR[en.status];
+        chip.textContent = clientName(en.clientId);
+        chipsWrap.appendChild(chip);
+      });
+      if (dayEntries.length > 2){
+        const more = document.createElement('div');
+        more.className = 'chip grey';
+        more.textContent = '+' + (dayEntries.length - 2) + ' más';
+        chipsWrap.appendChild(more);
+      }
+      cell.appendChild(chipsWrap);
+
+      // Total del día: viene ya calculado del servidor (byDate)
+      const dayTotal = (state.entriesCache[ym].byDate && state.entriesCache[ym].byDate[ds]) || 0;
+      if (dayTotal > 0){
+        const tot = document.createElement('span');
+        tot.className = 'day-total';
+        tot.textContent = fmtMoney(dayTotal);
+        cell.appendChild(tot);
+      }
+
+      cell.addEventListener('click', () => openDayModal(ds));
+      body.appendChild(cell);
+    }
+
+    // Totales del mes: calculados en el servidor (requisito de rendimiento), no en el navegador
+    document.getElementById('statPendFact').textContent = fmtMoney(totals.pendiente_facturar || 0);
+    document.getElementById('statPendCobro').textContent = fmtMoney(totals.facturado_pendiente_cobro || 0);
+    document.getElementById('statCobrado').textContent = fmtMoney(totals.cobrado || 0);
+  }
+
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    state.month--; if (state.month < 0){ state.month = 11; state.year--; }
+    renderCalendar();
+  });
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    state.month++; if (state.month > 11){ state.month = 0; state.year++; }
+    renderCalendar();
+  });
+  document.getElementById('todayBtn').addEventListener('click', () => {
+    const d = new Date();
+    state.year = d.getFullYear(); state.month = d.getMonth();
+    renderCalendar();
+  });
+  document.getElementById('addTodayEntryBtn').addEventListener('click', () => {
+    openDayModal(todayISO());
+  });
+
+  // ---------------- day modal ----------------
+  async function openDayModal(ds){
+    state.activeDate = ds;
+    const [y,m,d] = ds.split('-').map(Number);
+    const dateObj = new Date(y, m-1, d);
+    const weekday = dateObj.toLocaleDateString('es-ES', { weekday: 'long' });
+    document.getElementById('dayModalTitle').textContent =
+      weekday.charAt(0).toUpperCase()+weekday.slice(1) + ', ' + d + ' de ' + MESES[m-1].toLowerCase() + ' ' + y;
+
+    const ym = ymKey(y, m-1);
+    const entries = await loadEntriesForMonth(ym);
+    const dayEntries = entries.filter(e => e.date === ds);
+
+    const list = document.getElementById('dayEntryList');
+    list.innerHTML = '';
+    if (dayEntries.length === 0){
+      const li = document.createElement('li');
+      li.className = 'hint';
+      li.textContent = 'Todavía no hay registros este día.';
+      list.appendChild(li);
+    }
+    dayEntries.forEach(en => {
+      const li = document.createElement('li');
+      li.className = 'entry-item';
+      const client = state.clients.find(c => c.id === en.clientId);
+      const wa = (en.status === 'facturado_pendiente_cobro') ? waLink(client, en.activity, en.amount) : null;
+      li.innerHTML = `
+        <div class="entry-main">
+          <span class="entry-title">${escapeHtml(clientName(en.clientId))} · ${escapeHtml(en.type)}</span>
+          <span class="entry-sub">${escapeHtml(en.activity || '')}</span>
+          <span class="badge ${STATUS_COLOR[en.status]}">${STATUS_LABEL[en.status]}</span>
+          ${wa ? `<a class="wa-btn" href="${wa}" target="_blank" rel="noopener" style="margin-top:6px; width:fit-content;">📲 Recordar por WhatsApp</a>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          ${en.status !== 'no_aplica' ? `<span class="entry-amt">${fmtMoney(en.amount)}</span>` : ''}
+          <div class="entry-actions">
+            <button class="icon-btn" data-edit="${en.id}" title="Editar">✎</button>
+            <button class="icon-btn" data-del="${en.id}" title="Eliminar">🗑</button>
+          </div>
+        </div>`;
+      list.appendChild(li);
+    });
+    list.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => editEntry(b.dataset.edit)));
+    list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => deleteEntry(b.dataset.del)));
+
+    document.getElementById('entryForm').style.display = 'none';
+    openModal('dayModal');
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  document.getElementById('showEntryFormBtn').addEventListener('click', () => {
+    resetEntryForm();
+    document.getElementById('entryForm').style.display = 'block';
+  });
+  document.getElementById('cancelEntryBtn').addEventListener('click', () => {
+    document.getElementById('entryForm').style.display = 'none';
+  });
+
+  function resetEntryForm(){
+    document.getElementById('entryId').value = '';
+    document.getElementById('entryDate').value = state.activeDate;
+    document.getElementById('entryType').value = 'Dependencia';
+    fillClientSelect(document.getElementById('entryClient'), null);
+    document.getElementById('entryActivity').value = '';
+    document.getElementById('entryHours').value = '';
+    document.getElementById('entryNotes').value = '';
+    document.getElementById('entryGenerates').checked = false;
+    document.getElementById('entryMontoBase').value = '';
+    document.getElementById('entryMontoBase').dataset.suggested = '';
+    document.getElementById('entryIva').value = '15';
+    document.getElementById('entryRetencion').value = '0';
+    document.getElementById('entryAmountHint').style.display = 'none';
+    document.getElementById('entryStatus').value = 'pendiente_facturar';
+    document.getElementById('entryInvoiceDate').value = '';
+    document.getElementById('entryCollectionDate').value = '';
+    document.getElementById('chargeFields').classList.remove('show');
+    document.getElementById('deleteEntryBtn').style.display = 'none';
+    document.getElementById('quickAddClientForm').classList.remove('show');
+    recomputeEntryTax();
+  }
+
+  // Recalcula Subtotal / IVA / Retención / Total neto en vivo, cada vez que el usuario
+  // teclea. El "Total neto" es el monto que realmente se guarda y se usa en todos los
+  // paneles y sumas de la app (Monto base, IVA% y Retención% quedan guardados aparte,
+  // solo como referencia del desglose).
+  function recomputeEntryTax(){
+    const base = parseFloat(document.getElementById('entryMontoBase').value) || 0;
+    const ivaPct = parseFloat(document.getElementById('entryIva').value) || 0;
+    const retPct = parseFloat(document.getElementById('entryRetencion').value) || 0;
+    const iva = base * ivaPct / 100;
+    const ret = base * retPct / 100;
+    const neto = base + iva - ret;
+    document.getElementById('entrySubtotalOut').textContent = fmtMoney(base);
+    document.getElementById('entryIvaOut').textContent = fmtMoney(iva);
+    document.getElementById('entryRetOut').textContent = '-' + fmtMoney(ret);
+    document.getElementById('entryNetoOut').textContent = fmtMoney(neto);
+    document.getElementById('entryAmount').value = neto.toFixed(2);
+  }
+  ['entryMontoBase','entryIva','entryRetencion'].forEach(id => {
+    document.getElementById(id).addEventListener('input', recomputeEntryTax);
+  });
+
+  document.getElementById('entryGenerates').addEventListener('change', (e) => {
+    document.getElementById('chargeFields').classList.toggle('show', e.target.checked);
+    if (e.target.checked) suggestClientRate();
+  });
+
+  document.getElementById('entryClient').addEventListener('change', () => {
+    if (document.getElementById('entryGenerates').checked) suggestClientRate();
+  });
+
+  function suggestClientRate(){
+    const clientId = document.getElementById('entryClient').value;
+    const client = state.clients.find(c => c.id === clientId);
+    const baseField = document.getElementById('entryMontoBase');
+    const hint = document.getElementById('entryAmountHint');
+    if (client && client.rate){
+      // Only auto-fill if the field is empty or still matches a previous suggestion,
+      // so we never silently overwrite an amount the person already typed in.
+      if (!baseField.value || baseField.dataset.suggested === baseField.value){
+        baseField.value = client.rate;
+        baseField.dataset.suggested = String(client.rate);
+        recomputeEntryTax();
+      }
+      hint.textContent = 'Sugerido de tu tarifa habitual con ' + client.name + ' (' + fmtMoney(client.rate) + '). Ajústalo si esta obra vale distinto.';
+      hint.style.display = 'block';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+
+  document.getElementById('toggleQuickAddClient').addEventListener('click', () => {
+    document.getElementById('quickAddClientForm').classList.toggle('show');
+  });
+  document.getElementById('quickAddClientSave').addEventListener('click', async () => {
+    const name = document.getElementById('quickClientName').value.trim();
+    if (!name) return;
+    const rate = document.getElementById('quickClientRate').value;
+    const newClient = { id: uid(), name, type: document.getElementById('entryType').value,
+      taxId:'', contact:'', rate: rate || '', notes:'' };
+    try{
+      await saveClientApi(newClient);
+    }catch(e){ return; }
+    state.clients.push(newClient);
+    fillClientSelect(document.getElementById('entryClient'), newClient.id);
+    document.getElementById('quickClientName').value = '';
+    document.getElementById('quickClientRate').value = '';
+    document.getElementById('quickAddClientForm').classList.remove('show');
+    if (document.getElementById('entryGenerates').checked) suggestClientRate();
+  });
+
+  async function editEntry(id){
+    const ym = ymKey(state.year, state.month);
+    const entries = (state.entriesCache[ym] && state.entriesCache[ym].entries) || [];
+    const en = entries.find(e => e.id === id);
+    if (!en) return;
+    resetEntryForm();
+    document.getElementById('entryId').value = en.id;
+    document.getElementById('entryDate').value = en.date;
+    document.getElementById('entryType').value = en.type;
+    fillClientSelect(document.getElementById('entryClient'), en.clientId);
+    document.getElementById('entryActivity').value = en.activity || '';
+    document.getElementById('entryHours').value = en.hours || '';
+    document.getElementById('entryNotes').value = en.notes || '';
+    const generates = en.status !== 'no_aplica';
+    document.getElementById('entryGenerates').checked = generates;
+    document.getElementById('chargeFields').classList.toggle('show', generates);
+    // Compatibilidad: registros antiguos no tienen montoBase/ivaPct/retencionPct guardados;
+    // en ese caso se toma el monto ya guardado como base, sin impuestos, para no alterar su valor.
+    const hasBreakdown = en.montoBase !== undefined && en.montoBase !== null && en.montoBase !== '';
+    document.getElementById('entryMontoBase').value = hasBreakdown ? en.montoBase : (en.amount || '');
+    document.getElementById('entryIva').value = (en.ivaPct !== undefined && en.ivaPct !== null && en.ivaPct !== '') ? en.ivaPct : 0;
+    document.getElementById('entryRetencion').value = (en.retencionPct !== undefined && en.retencionPct !== null && en.retencionPct !== '') ? en.retencionPct : 0;
+    recomputeEntryTax();
+    document.getElementById('entryStatus').value = en.status === 'no_aplica' ? 'pendiente_facturar' : en.status;
+    document.getElementById('entryInvoiceDate').value = en.invoiceDate || '';
+    document.getElementById('entryCollectionDate').value = en.collectionDate || '';
+    document.getElementById('deleteEntryBtn').style.display = 'inline-block';
+    document.getElementById('entryForm').style.display = 'block';
+  }
+
+  async function deleteEntry(id){
+    if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+    const ym = ymKey(state.year, state.month);
+    try{
+      await deleteEntryApi(id);
+    }catch(e){
+      return; // el toast de error ya se mostró
+    }
+    await loadEntriesForMonth(ym, true); // forzar recarga desde el servidor
+    openDayModal(state.activeDate);
+    renderCalendar();
+  }
+
+  document.getElementById('deleteEntryBtn').addEventListener('click', () => {
+    const id = document.getElementById('entryId').value;
+    if (id) deleteEntry(id);
+  });
+
+  // Evita que la tecla "Listo"/Enter del teclado numérico del celular envíe el formulario
+  // a medias mientras todavía estás escribiendo otro campo (como IVA o Monto base).
+  // Solo se guarda cuando tocas el botón "Guardar" a propósito.
+  document.querySelectorAll('form').forEach(f => {
+    f.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA'){
+        e.preventDefault();
+      }
+    });
+  });
+
+  document.getElementById('entryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clientId = document.getElementById('entryClient').value;
+    if (!clientId){ alert('Agrega o selecciona un cliente antes de guardar.'); return; }
+    const ds = document.getElementById('entryDate').value;
+    const [y,m] = ds.split('-').map(Number);
+    const ym = ymKey(y, m-1);
+    const generates = document.getElementById('entryGenerates').checked;
+
+    const entry = {
+      id: document.getElementById('entryId').value || uid(),
+      date: ds,
+      type: document.getElementById('entryType').value,
+      clientId: clientId,
+      activity: document.getElementById('entryActivity').value.trim(),
+      hours: document.getElementById('entryHours').value,
+      notes: document.getElementById('entryNotes').value.trim(),
+      amount: generates ? (document.getElementById('entryAmount').value || 0) : 0,
+      montoBase: generates ? (document.getElementById('entryMontoBase').value || 0) : '',
+      ivaPct: generates ? (document.getElementById('entryIva').value || 0) : '',
+      retencionPct: generates ? (document.getElementById('entryRetencion').value || 0) : '',
+      // Regla de negocio: si el estado es "Cobrado", el monto sale automáticamente
+      // de "por facturar" / "por cobrar" (se excluye de esas sumas) y pasa a "Cobrado".
+      // El registro NUNCA se borra del historial al cambiar de estado, solo cambia su campo Estado.
+      status: generates ? document.getElementById('entryStatus').value : 'no_aplica',
+      invoiceDate: generates ? document.getElementById('entryInvoiceDate').value : '',
+      collectionDate: generates ? document.getElementById('entryCollectionDate').value : ''
+    };
+
+    const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+    submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner"></span>Guardando…';
+    try{
+      await saveEntryApi(entry);
+    }catch(err){
+      submitBtn.disabled = false; submitBtn.textContent = 'Guardar registro';
+      return; // el toast de error ya se mostró
+    }
+    submitBtn.disabled = false; submitBtn.textContent = 'Guardar registro';
+
+    await loadEntriesForMonth(ym, true); // recargar del servidor: evita datos desincronizados
+    openDayModal(ds);
+    renderCalendar();
+  });
+
+  // ================= CLIENTES =================
+  function renderClients(){
+    const wrap = document.getElementById('clientsTableWrap');
+    if (state.clients.length === 0){
+      wrap.innerHTML = `<div class="empty-state"><h3>Todavía no agregas clientes</h3><p>Agrega tu empleador y tus clientes independientes para empezar a registrar días de trabajo.</p></div>`;
+      return;
+    }
+    let html = `<table><thead><tr>
+      <th>Nombre</th><th>Tipo</th><th>RUC / Cédula</th><th>Contacto</th><th>Tarifa</th><th></th>
+    </tr></thead><tbody>`;
+    state.clients.forEach(c => {
+      html += `<tr>
+        <td>${escapeHtml(c.name)}</td>
+        <td><span class="badge ${c.type === 'Dependencia' ? 'teal':'gold'}">${escapeHtml(c.type)}</span></td>
+        <td>${escapeHtml(c.taxId || '—')}</td>
+        <td>${escapeHtml(c.contact || '—')}</td>
+        <td class="num">${c.rate ? fmtMoney(c.rate) : '—'}</td>
+        <td><button class="icon-btn" data-edit-client="${c.id}">✎</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('[data-edit-client]').forEach(b =>
+      b.addEventListener('click', () => editClient(b.dataset.editClient)));
+  }
+
+  document.getElementById('addClientBtn').addEventListener('click', () => {
+    document.getElementById('clientModalTitle').textContent = 'Nuevo cliente';
+    document.getElementById('clientForm').reset();
+    document.getElementById('clientId').value = '';
+    document.getElementById('deleteClientBtn').style.display = 'none';
+    openModal('clientModal');
+  });
+  document.getElementById('cancelClientBtn').addEventListener('click', () => closeModal('clientModal'));
+
+  function editClient(id){
+    const c = state.clients.find(c => c.id === id);
+    if (!c) return;
+    document.getElementById('clientModalTitle').textContent = 'Editar cliente';
+    document.getElementById('clientId').value = c.id;
+    document.getElementById('clientName').value = c.name;
+    document.getElementById('clientType').value = c.type;
+    document.getElementById('clientTaxId').value = c.taxId || '';
+    document.getElementById('clientContact').value = c.contact || '';
+    document.getElementById('clientRate').value = c.rate || '';
+    document.getElementById('clientNotes').value = c.notes || '';
+    document.getElementById('deleteClientBtn').style.display = 'inline-block';
+    openModal('clientModal');
+  }
+
+  document.getElementById('deleteClientBtn').addEventListener('click', async () => {
+    const id = document.getElementById('clientId').value;
+    if (!id) return;
+    if (!confirm('¿Eliminar este cliente? Los registros ya guardados con este cliente se mantendrán pero mostrarán "cliente eliminado".')) return;
+    try{
+      await deleteClientApi(id);
+    }catch(e){ return; }
+    state.clients = state.clients.filter(c => c.id !== id);
+    closeModal('clientModal');
+    refreshAllViews_();
+  });
+
+  document.getElementById('clientForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('clientId').value || uid();
+    const client = {
+      id,
+      name: document.getElementById('clientName').value.trim(),
+      type: document.getElementById('clientType').value,
+      taxId: document.getElementById('clientTaxId').value.trim(),
+      contact: document.getElementById('clientContact').value.trim(),
+      rate: document.getElementById('clientRate').value,
+      notes: document.getElementById('clientNotes').value.trim()
+    };
+    try{
+      await saveClientApi(client);
+    }catch(e){ return; }
+    const idx = state.clients.findIndex(c => c.id === id);
+    if (idx >= 0) state.clients[idx] = client; else state.clients.push(client);
+    closeModal('clientModal');
+    // Reactividad total: el catálogo de clientes es la única fuente del nombre/tarifa/RUC.
+    // Como el calendario, pendientes y resumen siempre resuelven el nombre en el momento de
+    // pintar (clientName(id)), basta con volver a pintar todo para que el cambio se vea
+    // en toda la app al instante, sin recargar la página.
+    refreshAllViews_();
+  });
+
+  function refreshAllViews_(){
+    renderClients();
+    renderCalendar();
+    const pendingTab = document.getElementById('tab-pendientes');
+    if (pendingTab && pendingTab.classList.contains('active')) renderPending();
+    const resumenTab = document.getElementById('tab-resumen');
+    if (resumenTab && resumenTab.classList.contains('active')) renderResumen();
+  }
+
+  // ================= PENDIENTES =================
+  function daysOverdue(p){
+    if (p.status === 'cobrado' || !p.dueDate) return 0;
+    const due = new Date(p.dueDate + 'T00:00:00');
+    const today = new Date(todayISO() + 'T00:00:00');
+    const diff = Math.round((today - due) / 86400000);
+    return diff > 0 ? diff : 0;
+  }
+
+  function renderPending(){
+    const wrap = document.getElementById('pendingTableWrap');
+    const showCobrados = document.getElementById('showCobradosToggle').checked;
+    // Regla de negocio: los ya "Cobrado" desaparecen de la vista de pendientes por defecto
+    // (no del historial/base de datos — solo del listado de tareas por hacer) para no generar
+    // confusión visual. El toggle "Mostrar cobrados" revela el historial completo.
+    const list = showCobrados ? state.pending : state.pending.filter(p => p.status !== 'cobrado');
+
+    if (list.length === 0){
+      wrap.innerHTML = state.pending.length === 0
+        ? `<div class="empty-state"><h3>No hay pendientes registrados</h3><p>Agrega aquí facturas o proyectos que estás esperando cobrar.</p></div>`
+        : `<div class="empty-state"><h3>No tienes pendientes activos 🎉</h3><p>Todo lo registrado ya está cobrado. Activa "Mostrar cobrados" para ver el historial.</p></div>`;
+      return;
+    }
+    let html = `<table><thead><tr>
+      <th>Cliente</th><th>Concepto</th><th>Monto</th><th>Estado</th><th>Vencimiento</th><th></th><th></th>
+    </tr></thead><tbody>`;
+    list.forEach(p => {
+      const overdue = daysOverdue(p);
+      const client = state.clients.find(c => c.id === p.clientId);
+      const wa = (p.status === 'facturado_pendiente_cobro') ? waLink(client, p.concept, p.amount) : null;
+      html += `<tr>
+        <td>${escapeHtml(clientName(p.clientId))}</td>
+        <td>${escapeHtml(p.concept)}</td>
+        <td class="num">${fmtMoney(p.amount)}</td>
+        <td><span class="badge ${STATUS_COLOR[p.status]}">${STATUS_LABEL[p.status]}</span></td>
+        <td>${overdue > 0 ? `<span class="badge brick">${overdue} días de atraso</span>` : (p.dueDate || '—')}</td>
+        <td>${wa ? `<a class="wa-btn" href="${wa}" target="_blank" rel="noopener">📲</a>` : ''}</td>
+        <td><button class="icon-btn" data-edit-pending="${p.id}">✎</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('[data-edit-pending]').forEach(b =>
+      b.addEventListener('click', () => editPending(b.dataset.editPending)));
+  }
+  document.getElementById('showCobradosToggle').addEventListener('change', renderPending);
+
+  function recomputePendingTax(){
+    const base = parseFloat(document.getElementById('pendingMontoBase').value) || 0;
+    const ivaPct = parseFloat(document.getElementById('pendingIva').value) || 0;
+    const retPct = parseFloat(document.getElementById('pendingRetencion').value) || 0;
+    const iva = base * ivaPct / 100;
+    const ret = base * retPct / 100;
+    const neto = base + iva - ret;
+    document.getElementById('pendingSubtotalOut').textContent = fmtMoney(base);
+    document.getElementById('pendingIvaOut').textContent = fmtMoney(iva);
+    document.getElementById('pendingRetOut').textContent = '-' + fmtMoney(ret);
+    document.getElementById('pendingNetoOut').textContent = fmtMoney(neto);
+    document.getElementById('pendingAmount').value = neto.toFixed(2);
+  }
+  ['pendingMontoBase','pendingIva','pendingRetencion'].forEach(id => {
+    document.getElementById(id).addEventListener('input', recomputePendingTax);
+  });
+
+  document.getElementById('addPendingBtn').addEventListener('click', () => {
+    document.getElementById('pendingModalTitle').textContent = 'Nuevo pendiente de cobro';
+    document.getElementById('pendingForm').reset();
+    document.getElementById('pendingId').value = '';
+    document.getElementById('pendingIva').value = '15';
+    document.getElementById('pendingRetencion').value = '0';
+    fillClientSelect(document.getElementById('pendingClient'), null);
+    document.getElementById('deletePendingBtn').style.display = 'none';
+    recomputePendingTax();
+    openModal('pendingModal');
+  });
+  document.getElementById('cancelPendingBtn').addEventListener('click', () => closeModal('pendingModal'));
+
+  function editPending(id){
+    const p = state.pending.find(p => p.id === id);
+    if (!p) return;
+    document.getElementById('pendingModalTitle').textContent = 'Editar pendiente';
+    document.getElementById('pendingId').value = p.id;
+    fillClientSelect(document.getElementById('pendingClient'), p.clientId);
+    document.getElementById('pendingConcept').value = p.concept;
+    document.getElementById('pendingServiceDate').value = p.serviceDate || '';
+    const hasBreakdown = p.montoBase !== undefined && p.montoBase !== null && p.montoBase !== '';
+    document.getElementById('pendingMontoBase').value = hasBreakdown ? p.montoBase : (p.amount || '');
+    document.getElementById('pendingIva').value = (p.ivaPct !== undefined && p.ivaPct !== null && p.ivaPct !== '') ? p.ivaPct : 0;
+    document.getElementById('pendingRetencion').value = (p.retencionPct !== undefined && p.retencionPct !== null && p.retencionPct !== '') ? p.retencionPct : 0;
+    recomputePendingTax();
+    document.getElementById('pendingStatus').value = p.status;
+    document.getElementById('pendingInvoiceDate').value = p.invoiceDate || '';
+    document.getElementById('pendingDueDate').value = p.dueDate || '';
+    document.getElementById('pendingCollectionDate').value = p.collectionDate || '';
+    document.getElementById('pendingNotes').value = p.notes || '';
+    document.getElementById('deletePendingBtn').style.display = 'inline-block';
+    openModal('pendingModal');
+  }
+
+  document.getElementById('deletePendingBtn').addEventListener('click', async () => {
+    const id = document.getElementById('pendingId').value;
+    if (!id) return;
+    if (!confirm('¿Eliminar este pendiente?')) return;
+    try{
+      await deletePendingApi(id);
+    }catch(e){ return; }
+    state.pending = state.pending.filter(p => p.id !== id);
+    closeModal('pendingModal');
+    renderPending();
+  });
+
+  document.getElementById('pendingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clientId = document.getElementById('pendingClient').value;
+    if (!clientId){ alert('Agrega o selecciona un cliente primero en la pestaña Clientes.'); return; }
+    const id = document.getElementById('pendingId').value || uid();
+    const item = {
+      id,
+      clientId,
+      concept: document.getElementById('pendingConcept').value.trim(),
+      serviceDate: document.getElementById('pendingServiceDate').value,
+      amount: document.getElementById('pendingAmount').value,
+      montoBase: document.getElementById('pendingMontoBase').value || 0,
+      ivaPct: document.getElementById('pendingIva').value || 0,
+      retencionPct: document.getElementById('pendingRetencion').value || 0,
+      status: document.getElementById('pendingStatus').value,
+      invoiceDate: document.getElementById('pendingInvoiceDate').value,
+      dueDate: document.getElementById('pendingDueDate').value,
+      collectionDate: document.getElementById('pendingCollectionDate').value,
+      notes: document.getElementById('pendingNotes').value.trim()
+    };
+    const submitBtn = document.querySelector('#pendingForm button[type="submit"]');
+    submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner"></span>Guardando…';
+    try{
+      await savePendingApi(item);
+    }catch(e){
+      submitBtn.disabled = false; submitBtn.textContent = 'Guardar';
+      return;
+    }
+    submitBtn.disabled = false; submitBtn.textContent = 'Guardar';
+    const idx = state.pending.findIndex(p => p.id === id);
+    if (idx >= 0) state.pending[idx] = item; else state.pending.push(item);
+    closeModal('pendingModal');
+    renderPending();
+  });
+
+  // ================= RESUMEN =================
+  async function renderResumen(){
+    const container = document.getElementById('resumenContent');
+    container.innerHTML = '<div class="loading-msg">Calculando totales…</div>';
+
+    let summary;
+    try{
+      const res = await apiGet('summary'); // totales y desglose calculados en Apps Script, no en el navegador
+      summary = res; // {ok, totals, byClient, overdueCount, overdueItems}
+      state.lastSummary = summary;
+    }catch(e){
+      container.innerHTML = '<div class="loading-msg" style="color:var(--brick);">No se pudo calcular el resumen. '
+        + '<button class="btn-text" id="retryResumenBtn">Reintentar</button></div>';
+      const retryBtn = document.getElementById('retryResumenBtn');
+      if (retryBtn) retryBtn.addEventListener('click', renderResumen);
+      return;
+    }
+
+    const totals = summary.totals || { pendiente_facturar:0, facturado_pendiente_cobro:0, cobrado:0 };
+    const byClient = summary.byClient || {};
+    const overdueItems = summary.overdueItems || [];
+
+    let html = `
+      <h2 class="section-title">Panorama general</h2>
+      <div class="stats-row">
+        <div class="stat-card gold"><span class="stat-label">Por facturar</span><span class="stat-value num">${fmtMoney(totals.pendiente_facturar)}</span></div>
+        <div class="stat-card teal"><span class="stat-label">Facturado, por cobrar</span><span class="stat-value num">${fmtMoney(totals.facturado_pendiente_cobro)}</span></div>
+        <div class="stat-card green"><span class="stat-label">Cobrado</span><span class="stat-value num">${fmtMoney(totals.cobrado)}</span></div>
+        <div class="stat-card brick"><span class="stat-label">Cobros vencidos</span><span class="stat-value num">${overdueItems.length}</span></div>
+      </div>
+
+      <h2 class="section-title">Por cliente / empleador</h2>`;
+
+    const clientIds = Object.keys(byClient);
+    if (clientIds.length === 0){
+      html += `<div class="card-table"><div class="empty-state">Aún no hay montos registrados.</div></div>`;
+    } else {
+      html += `<div class="card-table"><table><thead><tr>
+        <th>Cliente</th><th>Por facturar</th><th>Por cobrar</th><th>Cobrado</th><th>Total</th>
+      </tr></thead><tbody>`;
+      clientIds.forEach(cid => {
+        const t = byClient[cid];
+        const total = (t.pendiente_facturar || 0) + (t.facturado_pendiente_cobro || 0) + (t.cobrado || 0);
+        html += `<tr>
+          <td>${escapeHtml(clientName(cid))}</td>
+          <td class="num">${fmtMoney(t.pendiente_facturar)}</td>
+          <td class="num">${fmtMoney(t.facturado_pendiente_cobro)}</td>
+          <td class="num">${fmtMoney(t.cobrado)}</td>
+          <td class="num">${fmtMoney(total)}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+
+    html += `<h2 class="section-title">Cobros vencidos</h2>`;
+    if (overdueItems.length === 0){
+      html += `<div class="card-table"><div class="empty-state">No tienes cobros vencidos. 🎉</div></div>`;
+    } else {
+      html += `<div class="card-table"><table><thead><tr>
+        <th>Cliente</th><th>Concepto</th><th>Monto</th><th>Días de atraso</th>
+      </tr></thead><tbody>`;
+      overdueItems.forEach(p => {
+        html += `<tr>
+          <td>${escapeHtml(clientName(p.clienteId))}</td>
+          <td>${escapeHtml(p.concepto)}</td>
+          <td class="num">${fmtMoney(p.monto)}</td>
+          <td><span class="badge brick">${p.diasAtraso} días</span></td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  // ================= BACKUP =================
+  document.getElementById('backupBtn').addEventListener('click', () => {
+    document.getElementById('backupMsg').textContent = '';
+    openModal('backupModal');
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const msg = document.getElementById('backupMsg');
+    msg.textContent = 'Preparando respaldo…';
+    let data;
+    try{
+      data = await apiGet('exportAll');
+    }catch(e){
+      msg.textContent = 'No se pudo generar el respaldo. Intenta de nuevo.';
+      return;
+    }
+    const backup = { exportedAt: new Date().toISOString(), clients: data.clients, pending: data.pending, entries: data.entries };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'respaldo-libro-de-cobros-' + todayISO() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    msg.textContent = 'Respaldo descargado.';
+  });
+
+  document.getElementById('importBtn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('importFile');
+    const msg = document.getElementById('backupMsg');
+    if (!fileInput.files || !fileInput.files[0]){ msg.textContent = 'Selecciona un archivo primero.'; return; }
+    try{
+      const text = await fileInput.files[0].text();
+      const data = JSON.parse(text);
+      if (!confirm('Esto agrega/actualiza tus datos actuales con los del respaldo (no borra lo que ya tienes). ¿Continuar?')) return;
+      msg.textContent = 'Restaurando…';
+      await apiPost('importAll', { data: { clients: data.clients || [], entries: data.entries || [], pending: data.pending || [] } });
+      state.entriesCache = {};
+      await bootstrapApp();
+      msg.textContent = 'Respaldo restaurado correctamente.';
+    }catch(e){
+      msg.textContent = 'No se pudo restaurar el archivo. Verifica que sea un respaldo válido.';
+    }
+  });
+
+  // ================= CONEXIÓN / ONBOARDING =================
+  document.getElementById('onboardingSaveBtn').addEventListener('click', async () => {
+    const val = document.getElementById('onboardingUrl').value.trim();
+    const msg = document.getElementById('onboardingMsg');
+    if (!val.startsWith('https://script.google.com/')){
+      msg.textContent = 'Esa no parece una URL de Apps Script. Debe empezar con https://script.google.com/ y terminar en /exec.';
+      return;
+    }
+    setScriptUrl(val);
+    msg.textContent = 'Conectando…';
+    const ok = await testConnection();
+    if (!ok){
+      msg.textContent = 'No pudimos conectar con esa URL. Revisa que la implementación tenga acceso "Cualquier usuario" y vuelve a intentar.';
+      return;
+    }
+    document.getElementById('onboardingScreen').classList.remove('show');
+    startApp();
+  });
+
+  document.getElementById('settingsBtn').addEventListener('click', () => {
+    document.getElementById('settingsUrl').value = getScriptUrl();
+    document.getElementById('settingsUserName').value = getUserName();
+    document.getElementById('settingsMsg').textContent = '';
+    openModal('settingsModal');
+  });
+  document.getElementById('cancelSettingsBtn').addEventListener('click', () => closeModal('settingsModal'));
+  document.getElementById('settingsSaveBtn').addEventListener('click', async () => {
+    const val = document.getElementById('settingsUrl').value.trim();
+    const msg = document.getElementById('settingsMsg');
+    if (!val.startsWith('https://script.google.com/')){
+      msg.textContent = 'Esa no parece una URL de Apps Script válida.';
+      return;
+    }
+    setUserName(document.getElementById('settingsUserName').value || '');
+    setScriptUrl(val);
+    msg.textContent = 'Conectando…';
+    const ok = await testConnection();
+    if (!ok){
+      msg.textContent = 'No pudimos conectar. Revisa la URL e intenta otra vez.';
+      return;
+    }
+    closeModal('settingsModal');
+    state.entriesCache = {};
+    await bootstrapApp();
+    msg.textContent = '';
+  });
+
+  async function testConnection(){
+    try{
+      const url = getScriptUrl();
+      const res = await fetch(url + '?action=bootstrap');
+      const data = await res.json();
+      return !!(data && data.ok);
+    }catch(e){
+      return false;
+    }
+  }
+
+  // ================= INIT =================
+  // Una sola llamada al servidor trae clientes, pendientes y el resumen ya calculado
+  // (requisito de rendimiento: nada de esto se recalcula en el navegador al arrancar).
+  async function bootstrapApp(){
+    const data = await apiGet('bootstrap');
+    state.clients = data.clients || [];
+    state.pending = data.pending || [];
+    state.lastSummary = data.summary || null;
+    await renderCalendar();
+  }
+
+  async function startApp(){
+    document.getElementById('calBody').innerHTML = '<div class="loading-msg" style="grid-column:1/-1;">Cargando…</div>';
+    try{
+      await bootstrapApp();
+    }catch(e){
+      document.getElementById('calBody').innerHTML = '<div class="loading-msg" style="grid-column:1/-1; color:var(--brick);">'
+        + 'No se pudo cargar la app. <button class="btn-text" id="retryStartBtn">Reintentar</button></div>';
+      const retryBtn = document.getElementById('retryStartBtn');
+      if (retryBtn) retryBtn.addEventListener('click', startApp);
+    }
+  }
+
+  async function init(){
+    // El calendario SIEMPRE arranca en el mes/año actual del sistema (ver state.year/state.month arriba),
+    // nunca en una fecha fija dejada en el código.
+    const url = getScriptUrl();
+    if (!url){
+      document.getElementById('onboardingScreen').classList.add('show');
+      return;
+    }
+    document.getElementById('onboardingScreen').classList.remove('show');
+    startApp();
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>
